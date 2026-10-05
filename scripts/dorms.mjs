@@ -92,8 +92,10 @@ function repoSlug() {
 }
 /** --body-file 은 이 레포 안의 보통 글 파일만. 토큰 · 열쇠 · 받은 자료는 요청에 실을 수 없다. */
 function readBodyFile(p) {
-  const root = path.resolve(".");
-  const full = path.resolve(p);
+  // 링크 폴더를 거쳐 레포 밖으로 나가지 않게 실제 경로로 비교한다.
+  const root = fs.realpathSync(path.resolve("."));
+  let full;
+  try { full = fs.realpathSync(path.resolve(p)); } catch { fail("설명 파일을 찾지 못했어요."); }
   const rel = path.relative(root, full);
   if (!rel || rel.startsWith("..") || path.isAbsolute(rel)) fail("설명 파일은 이 레포 안에 두어야 해요.");
   const parts = rel.split(path.sep);
