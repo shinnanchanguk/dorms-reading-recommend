@@ -109,11 +109,15 @@ const EMAIL_RE = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g;
 const EMOJI_RE = /\p{Extended_Pictographic}/u;
 const SYMBOL_RE = /[▶▷◀◁▲▼△▽✓✔✕✖✗✘★☆♥♡←→↑↓↗↘◉○●◎■□◆◇]/;
 // 액자 안 화면을 다른 주소로 옮기는 코드. 도름스도 판을 받을 때 같은 것을 거절해요.
+const SCOPE = String.raw`(?:^|[^\w$.])(?:(?:window|self|document|globalThis|this)\s*\.\s*)*`;
 const MOVE_RES = [
-  [/(?:^|[^\w$.])(?:(?:window|self|document|globalThis)\s*\.\s*)?location\s*(?:\.\s*href\s*)?=(?!=)/, "location 바꾸기"],
-  [/(?:^|[^\w$.])(?:(?:window|self|document|globalThis)\s*\.\s*)?location\s*\.\s*(?:assign|replace)\s*\(/, "location.assign · replace"],
+  [new RegExp(`${SCOPE}location\\s*(?:\\.\\s*(?:href|host|hostname|protocol|port|search|pathname|hash)\\s*)?(?:\\+)?=(?![=>])`), "location 바꾸기"],
+  [new RegExp(`${SCOPE}location\\s*\\.\\s*(?:assign|replace)\\s*\\(`), "location.assign · replace"],
+  [/\blocation\s*\[/, "location 바꾸기"],
+  [/\bnavigation\s*\.\s*navigate\s*\(/, "navigation.navigate"],
   [/\b(?:window|self|globalThis)\s*\.\s*open\s*\(/, "새 창 열기"],
-  [/http-equiv\s*=\s*["']?\s*refresh/i, "자동 이동(meta refresh)"],
+  [/http-?equiv/i, "자동 이동(refresh)"],
+  [/<(?:a|area|form|base)\b[^>]*\b(?:href|action)\s*=\s*["']?\s*(?:https?:)?\/\//i, "바깥 주소로 가는 링크"],
 ];
 
 const allFiles = walk(root);
@@ -137,6 +141,7 @@ for (const file of allFiles) {
   if (isDist) {
     if (SYMBOL_RE.test(text) && !name.endsWith("dorms-book-sdk.js")) fail(`문자 기호가 있어요(화면 기호는 SVG 로): ${name}`);
     for (const [re, label] of MOVE_RES) if (re.test(text) && !name.endsWith("dorms-book-sdk.js")) fail(`화면을 다른 주소로 옮기는 코드(${label})가 있어요. 도름스가 이 판을 받지 않아요: ${name}`);
+    { const raw = fs.readFileSync(file); if ((raw[0] === 0xfe && raw[1] === 0xff) || (raw[0] === 0xff && raw[1] === 0xfe) || raw.includes(0)) fail(`글 파일은 UTF-8 로 저장해 주세요. 도름스가 이 판을 받지 않아요: ${name}`); }
     if (/overflow-wrap\s*:\s*anywhere/.test(text)) fail(`overflow-wrap: anywhere 는 글자를 한 글자씩 세로로 쌓이게 해요. break-word 로: ${name}`);
     const urls = (text.match(/https?:\/\/[A-Za-z0-9.-]+/g) || []).filter((url) => url !== "http://www.w3.org");
     if (urls.length) fail(`dist 안에서 바깥 주소를 부르면 도름스가 막아요(${urls[0]}): ${name}`);

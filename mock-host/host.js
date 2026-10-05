@@ -103,24 +103,25 @@
     if (port) { port.close(); port = null; }
     say("화면을 띄우는 중이에요.");
     document.querySelector(".frame-wrap").style.background = themeSelect.value === "dark" ? "#1D211F" : "#F7F8F4";
-    frame.src = pathInput.value;
     var channel = new MessageChannel();
     port = channel.port1;
     port.onmessage = function (event) { answer(event.data); };
     port.start();
     var handed = false;
+    var loads = 0;
     currentHand = function () {
-      if (handed) return;
+      // 진짜 도름스처럼 첫 load 전에 온 인사만 받는다(SDK 는 connect() 를 부르면 바로 인사한다).
+      if (handed || loads > 0) return;
       handed = true;
       frame.contentWindow.postMessage({ type: "dorms-book", version: 1 }, "*", [channel.port2]);
     };
     // 진짜 도름스처럼 포트는 화면의 SDK 가 인사해 올 때만 건넨다(위 message 듣기).
-    // 화면이 스스로 다른 주소로 옮겨 가면(두 번째 load) 연결을 끊는다.
-    var loads = 0;
+    // 화면이 스스로 다른 주소로 옮겨 가면(두 번째 load) 연결을 끊는다. 듣는 곳을 다 건 뒤에 주소를 넣는다.
     frame.onload = function () {
       loads += 1;
       if (loads > 1 && port) { port.close(); port = null; handed = true; say("화면이 다른 곳으로 옮겨 가서 연결을 끊었어요. 진짜 도름스에서는 기본 화면으로 돌아가요."); }
     };
+    frame.src = pathInput.value;
   }
   // 다시 띄울 때마다 듣는 곳을 늘리지 않게, 한 번만 걸고 지금 화면의 손만 부른다.
   var currentHand = function () {};
