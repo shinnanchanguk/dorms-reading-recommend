@@ -134,7 +134,8 @@ if (cmd === "config") {
   const q = new URLSearchParams({ scope });
   if (scope === "site") q.set("type", type);
   const before = flag("--before");
-  if (before && !Number.isNaN(Date.parse(before))) q.set("before", new Date(before).toISOString());
+  // 다음 쪽 커서(nextBefore)는 도름스가 준 시각 그대로 넘긴다(마이크로초까지).
+  if (before && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{1,6})?(Z|[+-]\d{2}:\d{2})$/.test(before)) q.set("before", before);
   const res = await fetch(`${site}/api/v1/books/${book}/read?${q}`, { headers: { Authorization: `Bearer ${t}` }, redirect: "error" });
   const body = await res.json().catch(() => ({}));
   if (!res.ok) fail(`도름스가 거절했어요: ${String(body.error ?? res.status).replace(CONTROL_RE, "")}`);
