@@ -1,0 +1,139 @@
+/*
+ * 학생 도서 추천 화면의 모양. 독서 교육 책(교육과 AI를 잇다와 같은 책 틀)과 같은 규칙을 그대로 옮겼어요.
+ * 색은 도름스가 건네는 책 색(--paper · --ink · --ink-light · --border-light)과 교과 색(--ch-1 ~ --ch-10)을 씁니다.
+ * 더 자세한 규칙은 레포의 design/README.md 에 있어요. 마음대로 바꿔도 되지만, 쌩 흰색(#fff)은 쓰지 마세요.
+ */
+:root {
+  --rr-paper: var(--paper, var(--book-paper, #F7F8F4));
+  --rr-ink: var(--ink, var(--book-body-ink, #242824));
+  --rr-muted: var(--ink-light, var(--book-muted, #5C635D));
+  --rr-line: var(--border-light, var(--book-rule, #C4C9C1));
+  --rr-edge: var(--border-dark, #8A9188);
+  --rr-soft: color-mix(in srgb, var(--rr-ink) 6%, var(--rr-paper));
+  --rr-display: "MaruBuri", "Nanum Myeongjo", "NanumMyeongjo", "AppleMyungjo", "Noto Serif KR", "Batang", serif;
+  --rr-sans: "SUIT Variable", "Pretendard", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", system-ui, sans-serif;
+  --chapter-color: var(--rr-ink);
+}
+* { box-sizing: border-box; }
+/* display 를 준 요소도 hidden 이면 확실히 숨긴다(접힌 교과가 그대로 보이던 원인). */
+[hidden] { display: none !important; }
+html, body { margin: 0; padding: 0; background: transparent; color: var(--rr-ink); }
+body {
+  font-family: var(--rr-sans);
+  font-size: 16px;
+  line-height: 1.6;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+button:disabled { cursor: not-allowed; opacity: 0.5; }
+:focus-visible { outline: 3px solid var(--rr-ink); outline-offset: 3px; }
+::selection { background: color-mix(in srgb, var(--chapter-color) 22%, var(--rr-paper)); color: var(--rr-ink); }
+
+/* 교과 자리 번호(1~10)마다 한 색. 무엇이든 data-chapter 를 달면 --chapter-color 를 받는다. */
+[data-chapter="1"] { --chapter-color: var(--ch-1); }
+[data-chapter="2"] { --chapter-color: var(--ch-2); }
+[data-chapter="3"] { --chapter-color: var(--ch-3); }
+[data-chapter="4"] { --chapter-color: var(--ch-4); }
+[data-chapter="5"] { --chapter-color: var(--ch-5); }
+[data-chapter="6"] { --chapter-color: var(--ch-6); }
+[data-chapter="7"] { --chapter-color: var(--ch-7); }
+[data-chapter="8"] { --chapter-color: var(--ch-8); }
+[data-chapter="9"] { --chapter-color: var(--ch-9); }
+[data-chapter="10"] { --chapter-color: var(--ch-10); }
+
+.rr-page { display: flex; flex-direction: column; gap: 18px; padding: 4px 2px 20px; }
+.rr-state { margin: 0; padding: 24px 0; color: var(--rr-muted); }
+.rr-state > p { margin: 0 0 10px; }
+
+/* ── 머리: 제목 · 한 줄 · 개수 · 도구 ── */
+.rr-head { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px 16px; padding-bottom: 14px; border-bottom: 1px solid var(--rr-line); }
+.rr-titles { flex: 1 1 260px; min-width: 0; }
+.rr-title { margin: 0; font-family: var(--rr-display); font-size: 28px; font-weight: 600; line-height: 1.35; letter-spacing: -0.025em; }
+.rr-lead { margin: 4px 0 0; color: var(--rr-muted); font-size: 15px; }
+.rr-count { margin: 0; color: var(--rr-muted); font-size: 13px; font-variant-numeric: tabular-nums; }
+.rr-tools { display: flex; flex-wrap: wrap; gap: 8px; margin-left: auto; }
+
+/* ── 단추: 8px 모서리 · 테두리 · 강조는 먹색 바탕 ── */
+.rr-button, .rr-primary, .rr-quiet {
+  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  min-height: 40px; padding: 8px 12px; border-radius: 8px;
+  font-size: 14px; font-weight: 650; line-height: 1.4;
+  transition: background 0.14s, border-color 0.14s;
+}
+.rr-button { border: 1px solid var(--rr-line); background: transparent; }
+.rr-button:hover { background: var(--rr-soft); border-color: var(--rr-edge); }
+.rr-primary { border: 1px solid var(--rr-ink); background: var(--rr-ink); color: var(--rr-paper); }
+.rr-primary:hover { background: color-mix(in srgb, var(--rr-ink) 88%, var(--rr-paper)); }
+.rr-quiet { border: 0; background: transparent; padding: 8px; }
+.rr-quiet:hover { background: var(--rr-soft); }
+.rr-button svg, .rr-primary svg, .rr-quiet svg { flex: 0 0 auto; display: block; }
+
+/* ── 교과 목차 줄(독서 교육 책의 목차 줄과 같은 치수) ── */
+.rr-outline { display: flex; flex-direction: column; }
+.rr-group { padding: 4px 0; border-bottom: 1px solid var(--rr-line); }
+.rr-group:last-child { border-bottom: 0; }
+.rr-subject {
+  display: grid; grid-template-columns: 32px minmax(0, 1fr) auto 20px; align-items: center; gap: 12px;
+  width: 100%; min-height: 56px; padding: 12px 6px 12px 0;
+  border: 0; border-radius: 8px; background: transparent; text-align: left;
+}
+.rr-subject:hover { background: color-mix(in srgb, var(--chapter-color) 6%, var(--rr-paper)); }
+.rr-badge {
+  width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 8px; background: var(--chapter-color); color: var(--rr-paper);
+  font-size: 13px; font-weight: 800; letter-spacing: 0.02em; font-variant-numeric: tabular-nums;
+}
+.rr-subject-main { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.rr-subject-title { font-family: var(--rr-display); font-size: 18px; font-weight: 600; line-height: 1.45; letter-spacing: -0.02em; }
+.rr-subject-note { font-size: 13px; color: var(--rr-muted); }
+.rr-pill {
+  min-width: 30px; padding: 2px 9px; border-radius: 999px; text-align: center;
+  background: color-mix(in srgb, var(--chapter-color) 11%, var(--rr-paper)); color: var(--chapter-color);
+  font-size: 13px; font-weight: 800; line-height: 1.6; font-variant-numeric: tabular-nums;
+}
+.rr-chevron { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 32px; color: var(--rr-muted); }
+.rr-chevron svg { transform: rotate(-90deg); transition: transform 180ms cubic-bezier(.2, .8, .2, 1); }
+.rr-subject[aria-expanded="true"] .rr-chevron svg { transform: none; color: var(--chapter-color); }
+.rr-subject[aria-expanded="true"] .rr-subject-title { font-weight: 700; }
+
+/* 아직 비어 있는 교과: 채운 교과가 먼저 읽히게 번호는 테두리만, 수 알약은 접는다. */
+.rr-group[data-empty="true"] .rr-badge { background: transparent; color: var(--chapter-color); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--chapter-color) 55%, var(--rr-paper)); }
+.rr-group[data-empty="true"] .rr-subject-title { color: var(--rr-muted); }
+.rr-group[data-empty="true"] .rr-pill { visibility: hidden; }
+
+/* ── 펼친 교과: 장 색 줄기에 책이 매달린다 ── */
+.rr-subject-body { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; margin: 0 0 12px 15px; padding: 2px 0 6px 29px; border-left: 2px solid color-mix(in srgb, var(--chapter-color) 52%, var(--rr-paper)); }
+.rr-books { list-style: none; margin: 0; padding: 0; width: 100%; display: flex; flex-direction: column; }
+.rr-book { display: flex; align-items: flex-start; gap: 8px; padding: 12px 0; border-bottom: 1px solid var(--rr-line); }
+.rr-book:last-child { border-bottom: 0; }
+.rr-book-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.rr-book-title { font-family: var(--rr-display); font-size: 17px; font-weight: 700; line-height: 1.45; }
+.rr-book-meta { font-size: 13px; color: var(--rr-muted); }
+.rr-book-reason { margin: 2px 0 0; font-size: 15px; line-height: 1.7; }
+.rr-book-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 2px; }
+.rr-empty { margin: 0; padding: 6px 0; color: var(--rr-muted); font-size: 14px; }
+.rr-empty-all { margin: 0; padding: 8px 0; color: var(--rr-muted); }
+
+/* ── 더하기 · 고치기 칸 ── */
+.rr-editor { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 16px; padding: 16px; border: 1px solid var(--rr-line); border-radius: 14px; background: var(--rr-soft); }
+.rr-field { display: flex; flex-direction: column; gap: 6px; min-width: 0; font-size: 14px; font-weight: 650; }
+.rr-field:nth-of-type(5), .rr-field:nth-of-type(6) { grid-column: 1 / -1; }
+.rr-field input, .rr-field select, .rr-field textarea { width: 100%; min-height: 42px; padding: 8px 12px; border: 1px solid var(--rr-line); border-radius: 8px; background: var(--rr-paper); font-size: 16px; font-weight: 400; }
+.rr-field textarea { resize: vertical; line-height: 1.6; }
+.rr-editor-actions { grid-column: 1 / -1; display: flex; justify-content: flex-end; gap: 8px; }
+
+@media (max-width: 560px) {
+  .rr-title { font-size: 24px; }
+  .rr-subject { grid-template-columns: 30px minmax(0, 1fr) auto 18px; gap: 10px; }
+  .rr-badge { width: 30px; height: 30px; }
+  .rr-subject-title { font-size: 17px; }
+  .rr-subject-body { margin-left: 14px; padding-left: 20px; }
+  .rr-editor { grid-template-columns: minmax(0, 1fr); }
+  .rr-button, .rr-primary, .rr-quiet { min-height: 44px; }
+  .rr-quiet { min-width: 44px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; animation: none !important; }
+}

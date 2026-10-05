@@ -1,0 +1,24 @@
+/* 독서 교육 책의 모양 최소 묶음. 새 화면을 만들 때 이 파일 내용을 dist 의 CSS 맨 위에 옮겨 쓰면 됩니다. */
+:root {
+  --rr-paper: var(--paper, var(--book-paper, #F7F8F4));
+  --rr-ink: var(--ink, var(--book-body-ink, #242824));
+  --rr-muted: var(--ink-light, var(--book-muted, #5C635D));
+  --rr-line: var(--border-light, var(--book-rule, #C4C9C1));
+  --rr-edge: var(--border-dark, #8A9188);
+  --rr-soft: color-mix(in srgb, var(--rr-ink) 6%, var(--rr-paper));
+  --rr-display: "MaruBuri", "Nanum Myeongjo", "NanumMyeongjo", "AppleMyungjo", "Noto Serif KR", "Batang", serif;
+  --rr-sans: "SUIT Variable", "Pretendard", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", system-ui, sans-serif;
+  --chapter-color: var(--rr-ink);
+}
+[hidden] { display: none !important; }
+body { font-family: var(--rr-sans); color: var(--rr-ink); word-break: keep-all; overflow-wrap: break-word; }
+[data-chapter="1"] { --chapter-color: var(--ch-1); } [data-chapter="2"] { --chapter-color: var(--ch-2); }
+[data-chapter="3"] { --chapter-color: var(--ch-3); } [data-chapter="4"] { --chapter-color: var(--ch-4); }
+[data-chapter="5"] { --chapter-color: var(--ch-5); } [data-chapter="6"] { --chapter-color: var(--ch-6); }
+[data-chapter="7"] { --chapter-color: var(--ch-7); } [data-chapter="8"] { --chapter-color: var(--ch-8); }
+[data-chapter="9"] { --chapter-color: var(--ch-9); } [data-chapter="10"] { --chapter-color: var(--ch-10); }
+.book-title { font-family: var(--rr-display); font-size: 28px; font-weight: 600; line-height: 1.35; letter-spacing: -0.025em; }
+.book-badge { width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px; background: var(--chapter-color); color: var(--rr-paper); font-size: 13px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.book-button { display: inline-flex; align-items: center; gap: 7px; min-height: 40px; padding: 8px 12px; border: 1px solid var(--rr-line); border-radius: 8px; background: transparent; color: var(--rr-ink); font: inherit; font-size: 14px; font-weight: 650; cursor: pointer; }
+.book-button:hover { background: var(--rr-soft); border-color: var(--rr-edge); }
+.book-button.is-primary { background: var(--rr-ink); border-color: var(--rr-ink); color: var(--rr-paper); }

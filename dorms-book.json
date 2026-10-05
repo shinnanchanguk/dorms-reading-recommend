@@ -1,0 +1,25 @@
+{
+  "verifyCode": "여기에 도름스가 준 확인 코드를 붙여 넣으세요",
+  "note": "이 파일은 레포 맨 위(dist 밖)에 둡니다. 확인 코드는 이 책의 레포가 맞는지 확인하는 데만 쓰고, data 는 이 화면이 쓰는 자료 표(데이터 상자 모음) 선언입니다.",
+  "book": "독서 교육",
+  "index": "recommend",
+  "data": [
+    {
+      "index": "recommend",
+      "collection": "books",
+      "label": "추천 도서",
+      "write": "operator",
+      "read": "anyone",
+      "fields": {
+        "subject": "교과(공통 · 국어 · 수학 … 진로 가운데 하나)",
+        "title": "책 제목(120자까지)",
+        "author": "지은이(80자까지)",
+        "level": "학년 · 학교급(40자까지)",
+        "reason": "한 줄 추천 이유(200자까지)",
+        "link": "책 소개 주소(http/https, 없어도 됨)",
+        "order": "같은 교과 안의 순서(숫자)"
+      },
+      "why": "교과마다 학생에게 권하는 책을 운영하는 선생님이 담고 고칩니다."
+    }
+  ]
+}

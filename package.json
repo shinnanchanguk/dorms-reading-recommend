@@ -1,0 +1,12 @@
+{
+  "name": "dorms-reading-recommend",
+  "private": true,
+  "version": "0.1.0",
+  "description": "도름스 독서 교육 책의 '학생 도서 추천' 화면 (도름스 책 SDK 시작 틀)",
+  "license": "MIT",
+  "scripts": {
+    "dev": "node scripts/serve.mjs",
+    "check": "node scripts/check.mjs"
+  },
+  "engines": { "node": ">=18" }
+}
