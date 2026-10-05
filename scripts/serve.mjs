@@ -41,7 +41,13 @@ const server = http.createServer((request, response) => {
     if (error) { response.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" }).end("없는 파일이에요."); return; }
     const ext = path.extname(file).slice(1).toLowerCase();
     const headers = { "Content-Type": TYPES[ext] || "application/octet-stream", "Cache-Control": "no-store" };
-    if (pathname.startsWith("/dist/")) headers["Content-Security-Policy"] = bundlePolicy(`http://${host}:${port}`);
+    if (pathname.startsWith("/dist/")) {
+      headers["Content-Security-Policy"] = bundlePolicy(`http://${host}:${port}`);
+      // 진짜 도름스처럼 화면 파일은 교차 출처로 열어 둔다. 격리된 액자는 출처가 없어서(null), 자기 묶음의 글꼴을 불러올 때도
+      // 교차 출처 요청이 된다. 이 두 줄이 없으면 dist/assets 의 글꼴이 연습 화면에서만 막힌다.
+      headers["Access-Control-Allow-Origin"] = "*";
+      headers["Cross-Origin-Resource-Policy"] = "cross-origin";
+    }
     response.writeHead(200, headers).end(bytes);
   });
 });
