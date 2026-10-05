@@ -99,23 +99,38 @@
     }
   }
 
+  /** 다시 띄울 때마다 새 액자를 쓴다. 앞 화면이 늦게 보낸 load 가 새 화면의 연결을 끊지 않게. */
+  function freshFrame() {
+    var next = document.createElement("iframe");
+    next.id = "frame";
+    next.setAttribute("sandbox", "allow-scripts");
+    next.title = frame.title;
+    frame.replaceWith(next);
+    frame = next;
+  }
+
   function mount() {
     if (port) { port.close(); port = null; }
     say("화면을 띄우는 중이에요.");
     document.querySelector(".frame-wrap").style.background = themeSelect.value === "dark" ? "#1D211F" : "#F7F8F4";
+    freshFrame();
     var channel = new MessageChannel();
     port = channel.port1;
     port.onmessage = function (event) { answer(event.data); };
     port.start();
     var handed = false;
+    var late = false;
     var loads = 0;
+    var started = Date.now();
     currentHand = function () {
-      // 진짜 도름스처럼 첫 load 전에 온 인사만 받는다(SDK 는 connect() 를 부르면 바로 인사한다).
-      if (handed || loads > 0) return;
+      // 진짜 도름스처럼 포트는 화면의 SDK 가 인사해 올 때 한 번만 건넨다.
+      // 첫 load 와 인사 중 무엇이 먼저 오는지는 브라우저마다 달라서(격리된 액자가 다른 프로세스에서 돌면 load 가 먼저 오기도 해요) load 수로 막지 않는다.
+      // 대신 진짜 도름스처럼 6초 안에 인사하지 않으면 받지 않는다(DormsBook.connect() 는 화면 스크립트 첫머리에서 부르세요).
+      if (handed || late) return;
+      if (Date.now() - started > 6000) { late = true; say("화면이 6초 안에 인사하지 않았어요. 진짜 도름스에서는 기본 화면으로 돌아가요. DormsBook.connect() 를 화면 스크립트 첫머리에서 부르는지 확인해 주세요."); return; }
       handed = true;
       frame.contentWindow.postMessage({ type: "dorms-book", version: 1 }, "*", [channel.port2]);
     };
-    // 진짜 도름스처럼 포트는 화면의 SDK 가 인사해 올 때만 건넨다(위 message 듣기).
     // 화면이 스스로 다른 주소로 옮겨 가면(두 번째 load) 연결을 끊는다. 듣는 곳을 다 건 뒤에 주소를 넣는다.
     frame.onload = function () {
       loads += 1;

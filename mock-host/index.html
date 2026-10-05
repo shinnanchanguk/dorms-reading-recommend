@@ -12,7 +12,8 @@
       select, input, button { font: inherit; padding: 6px 10px; border-radius: 8px; border: 1px solid #C4C9C1; background: #FDFDF9; color: inherit; }
       button { cursor: pointer; }
       main { padding: 16px; }
-      .frame-wrap { width: min(760px, 100%); padding: 24px 28px; border: 1px solid #C4C9C1; border-radius: 14px; background: #F7F8F4; }
+      .frame-wrap { box-sizing: border-box; width: min(760px, 100%); padding: 24px 28px; border: 1px solid #C4C9C1; border-radius: 14px; background: #F7F8F4; }
+      @media (max-width: 560px) { .frame-wrap { padding: 16px 14px; } header input { width: 100%; } }
       iframe { display: block; width: 100%; min-height: 420px; border: 0; background: transparent; }
       #log { margin: 12px 0 0; padding: 10px 12px; border-radius: 12px; background: #F7F8F4; font-size: .85rem; white-space: pre-wrap; max-height: 240px; overflow: auto; }
       .hint { margin: 10px 0 0; font-size: .85rem; color: #5C635D; }
