@@ -41,7 +41,12 @@ function assertPrivatePaths() {
     try { if (fs.lstatSync(p).isSymbolicLink()) fail(`${p} 가 다른 곳을 가리키는 링크예요. 지우고 다시 해 주세요.`); } catch { /* 없으면 괜찮다 */ }
   }
 }
+/** 레포 안의 진짜 파일 · 폴더만 쓴다. 링크면 멈춘다(링크를 따라 레포 밖에 쓰지 않게, 보안 검토 L1). */
+function refuseLink(p) {
+  try { if (fs.lstatSync(p).isSymbolicLink()) fail(`${p} 가 다른 곳을 가리키는 링크예요. 지우고 다시 해 주세요.`); } catch { /* 없으면 괜찮다 */ }
+}
 function ensureIgnored() {
+  refuseLink(".gitignore");
   const ignore = fs.existsSync(".gitignore") ? fs.readFileSync(".gitignore", "utf8") : "";
   const need = [".dorms/", ".work/"].filter((line) => !ignore.split("\n").includes(line));
   if (need.length) fs.appendFileSync(".gitignore", (ignore.endsWith("\n") || !ignore ? "" : "\n") + need.join("\n") + "\n");
@@ -151,9 +156,13 @@ if (cmd === "config") {
   const date = new Date().toISOString().slice(0, 10);
   // 파일 이름은 도름스 접수기가 받는 모양(영문 · 숫자 · .-_)만 쓴다. 한글 제목은 파일 안 '제목:' 줄에 그대로 남는다.
   const ascii = title.normalize("NFKD").replace(/[^A-Za-z0-9]+/g, "-").replace(/^-+|-+$/g, "").toLowerCase().slice(0, 40);
+  refuseLink("requests");
   fs.mkdirSync("requests", { recursive: true });
+  if (!fs.realpathSync("requests").startsWith(fs.realpathSync(".") + path.sep)) fail("requests 폴더가 이 레포 밖을 가리켜요. 지우고 다시 해 주세요.");
   const file = path.join("requests", `${date}-${ascii ? `${ascii}-` : ""}${Date.now().toString(36)}.md`);
-  fs.writeFileSync(file, `---\n제목: ${title}\n종류: ${kind}\n---\n\n${body.trim().slice(0, 4000)}\n`);
+  // 새 파일만 만든다(이미 있거나 링크면 열지 않는다).
+  const fd = fs.openSync(file, fs.constants.O_WRONLY | fs.constants.O_CREAT | fs.constants.O_EXCL | (fs.constants.O_NOFOLLOW ?? 0), 0o644);
+  try { fs.writeSync(fd, `---\n제목: ${title}\n종류: ${kind}\n---\n\n${body.trim().slice(0, 4000)}\n`); } finally { fs.closeSync(fd); }
   // 요청 파일과, 이미 추적 중인 파일에서 고친 내용을 함께 올린다(새 파일은 먼저 커밋해 두면 함께 간다).
   git("add", "-u");
   git("add", file);
