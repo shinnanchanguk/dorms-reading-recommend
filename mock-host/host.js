@@ -67,13 +67,16 @@
         checkDeclared(index.key, collection);
         var rows = ((store[index.key] = store[index.key] || {})[collection] = store[index.key][collection] || []);
         var shape = function (row) { return { key: row.key, value: row.value, mine: row.mine === true, updatedAt: row.updatedAt || "2026-10-05T00:00:00.000Z" }; };
-        if (method === "data.list") return reply(id, { rows: rows.map(shape) });
+        // 진짜 도름스처럼 최근에 고친 200줄까지만 돌려준다.
+        if (method === "data.list") return reply(id, { rows: rows.slice(0, 200).map(shape) });
         var key = typeof params.key === "string" && params.key.length >= 1 && params.key.length <= 80 ? params.key : null;
         if (!key) return refuse(id, "이름을 확인해 주세요.");
         if (method === "data.get") { var found = rows.filter(function (row) { return row.key === key; })[0]; return reply(id, { row: found ? shape(found) : null }); }
         if (level === "anyone") return refuse(id, "로그인이 필요해요.");
         if (RANK[level] < RANK[index.writeRole]) return refuse(id, "이 색인에 남길 수 있는 분이 아니에요.");
         var at = rows.findIndex(function (row) { return row.key === key; });
+        // 진짜 도름스처럼 남이 남긴 줄은 운영하는 분만 고치고 지운다.
+        if (at >= 0 && rows[at].mine !== true && level !== "operator") return refuse(id, method === "data.remove" ? "남이 남긴 것은 지울 수 없어요." : "남이 남긴 것은 고칠 수 없어요.");
         if (method === "data.remove") {
           if (at < 0) return refuse(id, "그 기록을 찾지 못했어요.");
           rows.splice(at, 1); saveStore();
@@ -111,7 +114,13 @@
       handed = true;
       frame.contentWindow.postMessage({ type: "dorms-book", version: 1 }, "*", [channel.port2]);
     };
-    frame.addEventListener("load", function () { currentHand(); }, { once: true });
+    // 진짜 도름스처럼 포트는 화면의 SDK 가 인사해 올 때만 건넨다(위 message 듣기).
+    // 화면이 스스로 다른 주소로 옮겨 가면(두 번째 load) 연결을 끊는다.
+    var loads = 0;
+    frame.onload = function () {
+      loads += 1;
+      if (loads > 1 && port) { port.close(); port = null; handed = true; say("화면이 다른 곳으로 옮겨 가서 연결을 끊었어요. 진짜 도름스에서는 기본 화면으로 돌아가요."); }
+    };
   }
   // 다시 띄울 때마다 듣는 곳을 늘리지 않게, 한 번만 걸고 지금 화면의 손만 부른다.
   var currentHand = function () {};

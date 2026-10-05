@@ -28,13 +28,15 @@ function bundlePolicy(origin) {
 }
 
 const server = http.createServer((request, response) => {
+  // 이 컴퓨터의 주소로 온 요청만 받는다(다른 사이트가 주소 이름을 바꿔 연습 서버를 읽지 못하게).
+  if (![`${host}:${port}`, `localhost:${port}`].includes(String(request.headers.host || ""))) { response.writeHead(403).end(); return; }
   let pathname;
   try { pathname = decodeURIComponent(new URL(request.url || "/", `http://${host}:${port}`).pathname); }
   catch { response.writeHead(400).end(); return; }
   if (pathname.endsWith("/")) pathname += "index.html";
   const file = path.resolve(root, `.${pathname}`);
   // 레포 밖 파일 · 숨김 파일은 내보내지 않는다.
-  if (!file.startsWith(root + path.sep) || file.split(path.sep).some((part) => part.startsWith(".") && part !== ".")) { response.writeHead(404).end(); return; }
+  if (!file.startsWith(root + path.sep) || path.relative(root, file).split(path.sep).some((part) => part.startsWith("."))) { response.writeHead(404).end(); return; }
   fs.readFile(file, (error, bytes) => {
     if (error) { response.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" }).end("없는 파일이에요."); return; }
     const ext = path.extname(file).slice(1).toLowerCase();
